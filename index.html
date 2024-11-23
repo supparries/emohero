@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Emo to Hero - Tebak Hero Mobile Legends dari Emoji">
+    <title>Emo to Hero</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #title-container {
+            margin-bottom: 20px;
+        }
+        input[type="text"], button {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background-color: #222;
+            color: #fff;
+            border: 1px solid #555;
+            width: 100%;
+        }
+        button {
+            background-color: #4CAF50;
+            cursor: pointer;
+        }
+        #quizContainer, #resultContainer {
+            display: none;
+            text-align: center;
+        }
+        .question {
+            margin: 10px 0;
+            position: relative;
+        }
+        .autocomplete-suggestions {
+            position: absolute;
+            background-color: #333;
+            border: 1px solid #555;
+            max-height: 100px;
+            overflow-y: auto;
+            width: 100%;
+            z-index: 1;
+            border-radius: 5px;
+        }
+        .suggestion {
+            padding: 8px;
+            cursor: pointer;
+        }
+        .suggestion:hover {
+            background-color: #444;
+        }
+        .hidden { display: none; }
+
+        /* Styling untuk footer */
+        footer {
+            text-align: center;
+            font-size: 14px;
+            color: #aaa;
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+        }
+        footer a {
+            color: #555;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="title-container"><h1>Emo to Hero</h1></div>
+    
+    <!-- Input kode kuis -->
+    <div id="codeContainer">
+        <input type="text" id="quizCode" placeholder="Masukkan kode kuis">
+        <button onclick="fetchData()">Mulai Kuis</button>
+    </div>
+
+    <!-- Kuis Container -->
+    <div id="quizContainer">
+        <div id="quizContent"></div>
+    </div>
+
+    <!-- Hasil -->
+    <div id="resultContainer" style="display: none;">
+        <h2 id="scoreResult"></h2>
+        <input type="text" id="shareLink" readonly style="margin: 10px 0;">
+        <button onclick="shareQuizWhatsApp()">Bagikan ke WhatsApp</button>
+        <button onclick="copyQuizLink()">Salin Link</button>
+        <button onclick="replayQuiz()">Ulangi Kuis</button>
+    </div>
+
+    <footer>
+        <i>by</i> 
+        <b><a href="https://supparries.github.io" target="_blank">Supparries</a></b> 
+        <i>with</i> 
+        <b><a href="https://chatgpt.com" target="_blank">ChatGPT</a></b><br>
+        <span>Icons from <a href="https://www.flaticon.com" target="_blank">Flaticon</a></span>
+    </footer>
+
+    <script>
+      const heroList = [
+    "Aamon", "Akai", "Aldous", "Alpha", "Alucard", "Angela", "Argus", "Atlas", "Aulus", "Aurora", "Badang",
+    "Balmond", "Bane", "Barats", "Baxia", "Beatrix", "Belerick", "Benedetta", "Brody", "Carmilla", "Cecilion",
+    "Chang'e", "Chou", "Claude", "Clint", "Cyclops", "Diggie", "Edith", "Esmeralda", "Estes", "Eudora", "Fanny",
+    "Faramis", "Floryn", "Franco", "Fredrinn", "Freya", "Gatotkaca", "Gloo", "Gord", "Granger", "Grock",
+    "Guinevere", "Gusion", "Hanzo", "Harith", "Harley", "Hayabusa", "Helcurt", "Hilda", "Hylos", "Ixia",
+    "Jawhead", "Johnson", "Joy", "Julian", "Kadita", "Kagura", "Kaja", "Karina", "Khaleed", "Khufra", "Kimmy",
+    "Lancelot", "Lapu-Lapu", "Layla", "Leomord", "Lesley", "Ling", "Lolita", "Lunox", "Lylia", "Martis", "Masha",
+    "Mathilda", "Melissa", "Minotaur", "Minsitthar", "Miya", "Nana", "Natan", "Nolan", "Novaria", "Odette",
+    "Paquito", "Pharsa", "Phoveus", "Popol", "Rafaela", "Roger", "Ruby", "Saber", "Selena", "Silvanna", "Sun",
+    "Terizla", "Thamuz", "Tigreal", "Uranus", "Vale", "Valir", "Vexana", "Wanwan", "X.Borg", "Xavier",
+    "Yi Sun-shin", "Yu Zhong", "Yve", "Zhask", "Zilong"
+];
+    
+    let currentQuestionIndex = 0;
+    let questionsData = [];
+    let correctAnswers = 0; // Skor jawaban benar
+
+    // Fungsi mengambil data kuis
+    async function fetchData() {
+        const code = document.getElementById('quizCode').value.trim();
+        const url = 'https://docs.google.com/spreadsheets/d/1tcUUpL0Y9bbyI89yEZ9JVri7DKYaetLmyNUA8RKx8jA/export?format=csv';
+
+        try {
+            const response = await fetch(url);
+            const data = await response.text();
+            const rows = data.split('\n').map(row => row.split(','));
+
+            const quizRow = rows.find(row => row[1] && row[1].trim() === code);
+            if (quizRow) {
+                startQuiz(quizRow);
+            } else {
+                alert('Kode kuis tidak ditemukan.');
+            }
+        } catch (error) {
+            alert('Gagal mengambil data. Cek koneksi internet.');
+        }
+    }
+
+    // Fungsi memulai kuis
+    function startQuiz(row) {
+        document.getElementById('codeContainer').classList.add('hidden');
+        document.getElementById('quizContainer').style.display = 'block';
+
+        questionsData = []; // Reset data pertanyaan
+        for (let i = 3; i < row.length; i += 2) {
+            const emoji = row[i]?.trim();
+            const hero = row[i + 1]?.trim();
+
+            if (emoji && hero) {
+                questionsData.push({ emoji, hero });
+            }
+        }
+
+        // Tampilkan pertanyaan pertama
+        currentQuestionIndex = 0;
+        correctAnswers = 0;
+        displayQuestion(currentQuestionIndex);
+    }
+
+    // Fungsi menampilkan soal
+    function displayQuestion(index) {
+        const quizContent = document.getElementById('quizContent');
+        quizContent.innerHTML = '';
+
+        const question = questionsData[index];
+        if (!question) return;
+
+        const questionDiv = document.createElement("div");
+        questionDiv.className = "question";
+        questionDiv.innerHTML = `
+            <p>${question.emoji}</p>
+            <input type="text" class="heroInput" placeholder="Tebak hero">
+            <button onclick="checkAnswer()">Jawab</button>
+        `;
+        quizContent.appendChild(questionDiv);
+
+        const input = questionDiv.querySelector('.heroInput');
+        autocomplete(input, heroList);
+    }
+
+    // Fungsi memeriksa jawaban
+    function checkAnswer() {
+        const input = document.querySelector('.heroInput');
+        const userAnswer = input.value.trim().toLowerCase();
+        const correctAnswer = questionsData[currentQuestionIndex].hero.toLowerCase();
+
+        // Periksa jawaban dan perbarui skor
+        if (userAnswer === correctAnswer) {
+            correctAnswers++;
+        }
+
+        // Lanjut ke soal berikutnya atau tampilkan hasil
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questionsData.length) {
+            displayQuestion(currentQuestionIndex);
+        } else {
+            showResults();
+        }
+    }
+
+// Fungsi menampilkan hasil akhir
+    function showResults() {
+        document.getElementById('quizContainer').style.display = 'none';
+        document.getElementById('resultContainer').style.display = 'block';
+
+        const totalQuestions = questionsData.length;
+        document.getElementById('scoreResult').innerText = `Benar menebak ${correctAnswers} dari ${totalQuestions} emoji.`;
+
+        // Tautan untuk dibagikan
+        const code = document.getElementById('quizCode').value.trim();
+        const url = window.location.origin + window.location.pathname + '#' + code;
+        document.getElementById('shareLink').value = url;
+    }
+
+    // Fungsi membagikan kuis ke WhatsApp
+    function shareQuizWhatsApp() {
+        const code = document.getElementById('quizCode').value.trim();
+        const url = window.location.origin + window.location.pathname + '#' + code;
+        const whatsappLink = `https://api.whatsapp.com/send?text=${encodeURIComponent('Coba tebak hero di kuis ini! ' + url)}`;
+        
+        window.open(whatsappLink, '_blank');
+    }
+
+    // Fungsi menyalin link ke clipboard
+    function copyQuizLink() {
+        const code = document.getElementById('quizCode').value.trim();
+        const url = window.location.origin + window.location.pathname + '#' + code;
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Tautan kuis berhasil disalin: ' + url);
+        }, () => {
+            alert('Gagal menyalin tautan.');
+        });
+    }
+
+    // Fungsi autocomplete
+    function autocomplete(input, array) {
+        let currentFocus;
+        input.addEventListener("input", function() {
+            let list, item, val = this.value;
+            closeAllLists();
+            if (!val) return false;
+            currentFocus = -1;
+            list = document.createElement("div");
+            list.setAttribute("class", "autocomplete-suggestions");
+            this.parentNode.appendChild(list);
+
+            array.forEach(hero => {
+                if (hero.toLowerCase().includes(val.toLowerCase())) {
+                    item = document.createElement("div");
+                    item.classList.add("suggestion");
+                    item.innerHTML = "<strong>" + hero.substr(0, val.length) + "</strong>" + hero.substr(val.length);
+                    item.innerHTML += "<input type='hidden' value='" + hero + "'>";
+                    item.addEventListener("click", function() {
+                        input.value = this.getElementsByTagName("input")[0].value;
+                        closeAllLists();
+                    });
+                    list.appendChild(item);
+                }
+            });
+        });
+        
+        function closeAllLists() {
+            const items = document.getElementsByClassName("autocomplete-suggestions");
+            for (let i = 0; i < items.length; i++) {
+                items[i].parentNode.removeChild(items[i]);
+            }
+        }
+    }
+
+    // Fungsi untuk mereset kuis dan memulai ulang
+    function replayQuiz() {
+        window.location.reload();
+    }
+
+    // Fungsi mengisi kode dari URL hash
+    window.onload = function() {
+        const hash = window.location.hash.substring(1);
+        if (hash) {
+            document.getElementById('quizCode').value = hash;
+        }
+    };
+    </script>
+</body>
+</html>
