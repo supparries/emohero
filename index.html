@@ -6,100 +6,87 @@
     <meta name="description" content="Emohero - Tebak Hero Mobile Legends dari Emoji">
     <title>Emohero MLBB</title>
     <style>
-        body {
-            background-color: #000;
-            color: #fff;
-            font-family: 'Courier New', monospace;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-        h1 {
-            text-align: center;
-            font-size: 24px;
-        }
-        #title-container {
-            margin-bottom: 20px;
-        }
-        input[type="text"], button {
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 5px;
-            background-color: #222;
-            color: #fff;
-            border: 1px solid #555;
-            width: 100%;
-            max-width: 400px;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #4CAF50;
-            cursor: pointer;
-        }
-        #quizContainer, #resultContainer {
-            display: none;
-            text-align: center;
-            width: 100%;
-            max-width: 400px;
-        }
-        .question {
-            margin: 10px 0;
-        }
-        .autocomplete-suggestions {
-            position: absolute;
-            background-color: #333;
-            border: 1px solid #555;
-            max-height: 100px;
-            overflow-y: auto;
-            width: 100%;
-            z-index: 1;
-            border-radius: 5px;
-        }
-        .suggestion {
-            padding: 8px;
-            cursor: pointer;
-        }
-        .suggestion:hover {
-            background-color: #444;
-        }
-        .hidden { display: none; }
+      body {
+    background-color: #000;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Mengubah agar konten bergerak ke atas */
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 10px;
+    box-sizing: border-box;
+}
 
-        footer {
-            text-align: center;
-            font-size: 14px;
-            color: #aaa;
-            margin-top: 20px;
-        }
-        footer a {
-            color: #555;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        footer a:hover {
-            text-decoration: underline;
-        }
+#title-container {
+    margin-bottom: 20px;
+}
 
-        /* Media Queries untuk tampilan mobile */
-        @media (max-width: 480px) {
-            h1 {
-                font-size: 20px;
-            }
-            input[type="text"], button {
-                font-size: 14px;
-            }
-            footer {
-                font-size: 12px;
-            }
-        }
-        
-        .question p {
-    font-size: 40px; /* Ganti dengan ukuran font yang diinginkan */
+.question p {
+    font-size: 40px; /* Ganti sesuai ukuran yang diinginkan */
     text-align: center;
+}
+
+input[type="text"], button {
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 5px;
+    background-color: #222;
+    color: #fff;
+    border: 1px solid #555;
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #4CAF50;
+    cursor: pointer;
+}
+
+#quizContainer, #resultContainer {
+    display: none;
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+}
+
+.autocomplete-suggestions {
+    position: absolute;
+    background-color: #333;
+    border: 1px solid #555;
+    max-height: 100px;
+    overflow-y: auto;
+    width: 100%; /* Lebar mengikuti input/button */
+    max-width: 330px; /* Sesuaikan dengan ukuran tombol submit */
+    left: 50%;  /* Geser ke tengah */
+    transform: translateX(-50%); /* Rata tengah */
+    z-index: 1;
+    border-radius: 5px;
+    font-size: 18px;
+    box-sizing: border-box; /* Termasuk padding di dalam ukuran */
+}
+
+.suggestion {
+    padding: 6px 10px;
+    cursor: pointer;
+    text-align: center; /* Teks di tengah */
+}
+
+.suggestion:hover {
+    background-color: #444;
+}
+
+footer a {
+    color: #555;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+footer a:hover {
+    text-decoration: underline;
 }
     </style>
 </head>
@@ -155,67 +142,69 @@
     let correctAnswers = 0; // Skor jawaban benar
 
     // Fungsi mengambil data kuis
-    async function fetchData() {
-        const code = document.getElementById('quizCode').value.trim();
-        const url = 'https://docs.google.com/spreadsheets/d/1tcUUpL0Y9bbyI89yEZ9JVri7DKYaetLmyNUA8RKx8jA/export?format=csv';
+async function fetchData() {
+    const code = document.getElementById('quizCode').value.trim();
+    const url = 'https://docs.google.com/spreadsheets/d/1tcUUpL0Y9bbyI89yEZ9JVri7DKYaetLmyNUA8RKx8jA/export?format=csv';
 
-        try {
-            const response = await fetch(url);
-            const data = await response.text();
-            const rows = data.split('\n').map(row => row.split(','));
+    try {
+        const response = await fetch(url);
+        const data = await response.text();
+        const rows = data.split('\n').map(row => row.split(','));
 
-            const quizRow = rows.find(row => row[1] && row[1].trim() === code);
-            if (quizRow) {
-                startQuiz(quizRow);
-            } else {
-                alert('Kode kuis tidak ditemukan.');
-            }
-        } catch (error) {
-            alert('Gagal mengambil data. Cek koneksi internet.');
+        const quizRow = rows.find(row => row[1] && row[1].trim() === code);
+        if (quizRow) {
+            startQuiz(quizRow);
+        } else {
+            alert('Kode kuis tidak ditemukan.');
+        }
+    } catch (error) {
+        alert('Gagal mengambil data. Cek koneksi internet.');
+    }
+}
+
+// Fungsi memulai kuis
+function startQuiz(row) {
+    // Mengubah tampilan, menyembunyikan kode kuis dan menampilkan kuis
+    document.getElementById('codeContainer').style.display = 'none';
+    document.getElementById('quizContainer').style.display = 'block';
+
+    questionsData = []; // Reset data pertanyaan
+    for (let i = 3; i < row.length; i += 2) {
+        const emoji = row[i]?.trim();
+        const hero = row[i + 1]?.trim();
+
+        if (emoji && hero) {
+            questionsData.push({ emoji, hero });
         }
     }
 
-    // Fungsi memulai kuis
-    function startQuiz(row) {
-        document.getElementById('codeContainer').classList.add('hidden');
-        document.getElementById('quizContainer').style.display = 'block';
-
-        questionsData = []; // Reset data pertanyaan
-        for (let i = 3; i < row.length; i += 2) {
-            const emoji = row[i]?.trim();
-            const hero = row[i + 1]?.trim();
-
-            if (emoji && hero) {
-                questionsData.push({ emoji, hero });
-            }
-        }
-
-        // Tampilkan pertanyaan pertama
-        currentQuestionIndex = 0;
-        correctAnswers = 0;
-        displayQuestion(currentQuestionIndex);
-    }
+    // Tampilkan pertanyaan pertama
+    currentQuestionIndex = 0;
+    correctAnswers = 0;
+    displayQuestion(currentQuestionIndex);
+}
 
     // Fungsi menampilkan soal
-    function displayQuestion(index) {
-        const quizContent = document.getElementById('quizContent');
-        quizContent.innerHTML = '';
+    // Fungsi menampilkan soal
+function displayQuestion(index) {
+    const quizContent = document.getElementById('quizContent');
+    quizContent.innerHTML = '';
 
-        const question = questionsData[index];
-        if (!question) return;
+    const question = questionsData[index];
+    if (!question) return;
 
-        const questionDiv = document.createElement("div");
-        questionDiv.className = "question";
-        questionDiv.innerHTML = `
-            <p>${question.emoji}</p>
-            <input type="text" class="heroInput" placeholder="Guess the hero">
-            <button onclick="checkAnswer()">Submit</button>
-        `;
-        quizContent.appendChild(questionDiv);
+    const questionDiv = document.createElement("div");
+    questionDiv.className = "question";
+    questionDiv.innerHTML = `
+        <p>${question.emoji}</p>
+        <input type="text" class="heroInput" placeholder="Guess the hero">
+        <button onclick="checkAnswer()">Submit</button>
+    `;
+    quizContent.appendChild(questionDiv);
 
-        const input = questionDiv.querySelector('.heroInput');
-        autocomplete(input, heroList);
-    }
+    const input = questionDiv.querySelector('.heroInput');
+    autocomplete(input, heroList);  // Memanggil fungsi autocomplete
+}
 
     // Fungsi memeriksa jawaban
     function checkAnswer() {
@@ -271,40 +260,50 @@
         });
     }
 
-    // Fungsi autocomplete
-    function autocomplete(input, array) {
-        let currentFocus;
-        input.addEventListener("input", function() {
-            let list, item, val = this.value;
-            closeAllLists();
-            if (!val) return false;
-            currentFocus = -1;
-            list = document.createElement("div");
-            list.setAttribute("class", "autocomplete-suggestions");
-            this.parentNode.appendChild(list);
+    // Fungsi autocomplete untuk menampilkan rekomendasi hero
+function autocomplete(input, array) {
+    let currentFocus;
+    input.addEventListener("input", function() {
+        let list, item, val = this.value;
+        closeAllLists(); // Menutup daftar jika input kosong
+        if (!val) return false; // Jika input kosong, tidak menampilkan apa-apa
 
-            array.forEach(hero => {
-                if (hero.toLowerCase().includes(val.toLowerCase())) {
-                    item = document.createElement("div");
-                    item.classList.add("suggestion");
-                    item.innerHTML = "<strong>" + hero.substr(0, val.length) + "</strong>" + hero.substr(val.length);
-                    item.innerHTML += "<input type='hidden' value='" + hero + "'>";
-                    item.addEventListener("click", function() {
-                        input.value = this.getElementsByTagName("input")[0].value;
-                        closeAllLists();
-                    });
-                    list.appendChild(item);
-                }
-            });
-        });
-        
-        function closeAllLists() {
-            const items = document.getElementsByClassName("autocomplete-suggestions");
-            for (let i = 0; i < items.length; i++) {
-                items[i].parentNode.removeChild(items[i]);
+        currentFocus = -1; // Reset posisi focus
+
+        // Membuat elemen div untuk menampilkan daftar saran
+        list = document.createElement("div");
+        list.setAttribute("class", "autocomplete-suggestions");
+        this.parentNode.appendChild(list); // Menambahkan list di bawah input
+
+        array.forEach(hero => {
+            // Cek apakah nama hero mengandung teks yang dimasukkan
+            if (hero.toLowerCase().includes(val.toLowerCase())) {
+                item = document.createElement("div");
+                item.classList.add("suggestion");
+
+                // Tampilkan nama hero dengan highlight bagian yang dicocokkan
+                item.innerHTML = "<strong>" + hero.substr(0, val.length) + "</strong>" + hero.substr(val.length);
+                item.innerHTML += "<input type='hidden' value='" + hero + "'>"; // Menyimpan nilai hero
+
+                // Event listener untuk memilih saran
+                item.addEventListener("click", function() {
+                    input.value = this.getElementsByTagName("input")[0].value; // Isi input dengan pilihan
+                    closeAllLists(); // Tutup daftar saran setelah dipilih
+                });
+
+                list.appendChild(item); // Tambahkan item ke list
             }
+        });
+    });
+
+    // Fungsi untuk menutup daftar saran saat input hilang fokus atau disembunyikan
+    function closeAllLists() {
+        const items = document.getElementsByClassName("autocomplete-suggestions");
+        for (let i = 0; i < items.length; i++) {
+            items[i].parentNode.removeChild(items[i]);
         }
     }
+}
 
     // Fungsi untuk mereset kuis dan memulai ulang
     function replayQuiz() {
