@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Emo to Hero - Tebak Hero Mobile Legends dari Emoji">
-    <title>Emo to Hero</title>
+    <meta name="description" content="Emohero - Tebak Hero Mobile Legends dari Emoji">
+    <title>Emohero MLBB</title>
     <style>
         body {
             background-color: #000;
@@ -104,12 +104,12 @@
     </style>
 </head>
 <body>
-    <div id="title-container"><h1>Emo to Hero</h1></div>
+    <div id="title-container"><h1>Emohero MLBB</h1></div>
     
     <!-- Input kode kuis -->
     <div id="codeContainer">
-        <input type="text" id="quizCode" placeholder="Masukkan kode kuis">
-        <button onclick="fetchData()">Mulai Kuis</button>
+        <input type="text" id="quizCode" placeholder="Enter quiz code...">
+        <button onclick="fetchData()">PLAY!</button>
     </div>
 
     <!-- Kuis Container -->
@@ -121,17 +121,17 @@
     <div id="resultContainer" style="display: none;">
         <h2 id="scoreResult"></h2>
         <input type="text" id="shareLink" readonly style="margin: 10px 0;">
-        <button onclick="shareQuizWhatsApp()">Bagikan ke WhatsApp</button>
-        <button onclick="copyQuizLink()">Salin Link</button>
-        <button onclick="replayQuiz()">Ulangi Kuis</button>
+        <button onclick="shareQuizWhatsApp()">Share to WhatsApp</button>
+        <button onclick="copyQuizLink()">Copy Link</button>
+        <button onclick="replayQuiz()">Replay</button>
+        <button onclick="window.location.href='https://www.example.com'">Create</button>
     </div>
 
     <footer>
         <i>by</i> 
         <b><a href="https://supparries.github.io" target="_blank">Supparries</a></b> 
         <i>with</i> 
-        <b><a href="https://chatgpt.com" target="_blank">ChatGPT</a></b><br>
-        <span>Icons from <a href="https://www.flaticon.com" target="_blank">Flaticon</a></span>
+        <b><a href="https://chatgpt.com" target="_blank">ChatGPT</a></b>
     </footer>
 
     <script>
@@ -207,8 +207,8 @@
         questionDiv.className = "question";
         questionDiv.innerHTML = `
             <p>${question.emoji}</p>
-            <input type="text" class="heroInput" placeholder="Tebak hero">
-            <button onclick="checkAnswer()">Jawab</button>
+            <input type="text" class="heroInput" placeholder="Guess the hero">
+            <button onclick="checkAnswer()">Submit</button>
         `;
         quizContent.appendChild(questionDiv);
 
@@ -242,7 +242,7 @@
         document.getElementById('resultContainer').style.display = 'block';
 
         const totalQuestions = questionsData.length;
-        document.getElementById('scoreResult').innerText = `Benar menebak ${correctAnswers} dari ${totalQuestions} emoji.`;
+        document.getElementById('scoreResult').innerText = `Correct ${correctAnswers} of ${totalQuestions} emoji.`;
 
         // Tautan untuk dibagikan
         const code = document.getElementById('quizCode').value.trim();
